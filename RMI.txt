@@ -1,0 +1,40 @@
+
+python -m Pyro4.naming
+
+
+#server.py
+import Pyro4
+
+@Pyro4.expose
+class StringConcatenator:
+    def concatenate(self, string1, string2):
+        return string1+string2
+
+def main():
+    daemon = Pyro4.Daemon()
+    ns = Pyro4.locateNS()
+    uri = daemon.register(StringConcatenator)
+    ns.register("example.string_concatenator", uri)
+    print("Server is ready. Object registered as 'example.string_concatenator'")
+    daemon.requestLoop()
+
+if __name__== "__main__":
+    main()
+
+#client.py
+import Pyro4
+
+def main():
+    # Locate the remote object using its name
+    string_concatenator = Pyro4.Proxy("PYRONAME:example.string_concatenator")
+    
+    # Input two strings from the user
+    string1 = input("Enter the first string: ")
+    string2 = input("Enter the second string: ")
+    
+    # Call the remote method and print the result
+    result = string_concatenator.concatenate(string1, string2)
+    print(f"Concatenated result: {result}")
+
+if __name__== "__main__":
+    main()

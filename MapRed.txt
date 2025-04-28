@@ -1,0 +1,108 @@
+1.WordCount
+
+# mapper code 
+#mapper.py 
+#!/usr/bin/env python3 
+import sys 
+for lines in sys.stdin: 
+	line = lines.strip() 
+	words = line.lower().split() 
+	for word in words: 
+		print(word,1) 
+
+# reducer code 
+#reducer.py 
+#!/usr/bin/env python3 
+import sys 
+word_count={} 
+for lines in sys.stdin: 
+	word,count = lines.strip().split() 
+	word_count[word] = word_count.get(word,0) + int(count) 
+
+for word,count in word_count.items(): 
+	print(word,count) 
+
+2.Character Count
+
+#mapper
+#!/usr/bin/env python3
+import sys
+
+# Read input line by line
+for line in sys.stdin:
+    line = line.strip()
+    for char in line:
+        if char != ' ':  # Ignore spaces if not needed
+            print(f"{char}\t1")
+
+#reducer
+#!/usr/bin/env python3
+import sys
+from collections import defaultdict
+
+char_count = defaultdict(int)
+
+# Process input lines
+for line in sys.stdin:
+    line = line.strip()
+    char, count = line.split('\t')
+    char_count[char] += int(count)
+
+# Output the character counts
+for char, count in char_count.items():
+    print(f"{char}\t{count}")
+
+
+Commands:
+
+For Starting Hadoop any time use Following Commands on Terminal 
+1) ssh localhost 
+2) hadoop-3.3.1/bin/hdfs namenode -format 
+3) start-all.sh 
+4) Open the Browser and Type:- localhost:9870 
+
+Edit and save input file, mapper and reducer files 
+gedit input.txt 
+gedit mapper.py 
+gedit reducer.py 
+
+check files 
+ls 
+
+check contents 
+cat input.txt 
+cat mapper.py 
+cat reducer.py 
+
+For simple output 
+cat input.txt | python mapper.py 
+cat input.txt | python mapper.py |sort | python reducer.py 
+
+Access HDFS 
+hdfs dfs -put /home/admin1/input.txt / 
+hdfs dfs -mkdir /input 
+hdfs dfs -put input.txt /input 
+hdfs dfs -ls /input 
+hdfs dfs -cat /input/input.txt 
+
+Run Wordcount program:
+hadoop jar /home/admin1/hadoop-3.3.1/share/hadoop/tools/lib/hadoop-streaming-3.3.1.jar \
+-files /home/admin1/mapper.py,/home/admin1/reducer.py \
+-mapper "/home/admin1/anaconda3/bin/python mapper.py" \
+-reducer "/home/admin1/anaconda3/bin/python reducer.py" \
+-input /input/input.txt \
+-output /output
+
+Run CharacterCount Program:
+hadoop jar /home/admin1/hadoop-3.3.1/share/hadoop/tools/lib/hadoop-streaming-3.3.1.jar \
+-files char_mapper.py,char_reducer.py \
+-mapper "python3 char_mapper.py" \
+-reducer "python3 char_reducer.py" \
+-input /input/input.txt \
+-output /output_charcount
+
+Oldcommand:
+Run the program: 
+hadoop jar /home/admin1/hadoop-3.3.1/share/hadoop/tools/lib/hadoop-streaming-3.3.1.jar -file /home/admin1/mapper.py -mapper mapper.py -file /home/admin1/reducer.py -reducer 
+reducer.py -input /input/input.txt -output /output 
+

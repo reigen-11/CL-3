@@ -1,0 +1,95 @@
+
+# hotel_server.py
+
+import Pyro5.api
+
+@Pyro5.api.expose
+class Hotel:
+    def __init__(self):
+        self.booking = {}
+
+    def book(self, name):
+        if name in self.booking:
+            return f"{name} already has a booking"
+        self.booking[name] = f"Room #{len(self.booking) + 1}"
+        return f"Room booked for {name}"
+
+    def cancel(self, name):
+        if name in self.booking:
+            del self.booking[name]
+            return f"Booking canceled for {name}"
+        return f"No booking found for {name}"
+
+if __name__ == "__main__":
+    # Create a Pyro daemon
+    daemon = Pyro5.api.Daemon(host="localhost")
+    uri = daemon.register(Hotel)
+    print(" * Server URI =", uri)
+
+    # Register with the nameserver
+    ns = Pyro5.api.locate_ns()
+    ns.register("hotel.service", uri)
+
+    print(" * Hotel Booking Server is running…")
+    daemon.requestLoop()
+
+
+# hotel_client.py
+
+import Pyro5.api
+
+if __name__ == "__main__":
+    # Connect via the nameserver alias
+    hotel = Pyro5.api.Proxy("PYRONAME:hotel.service")
+
+    while True:
+        print("\n1) Book Room   2) Cancel Booking   3) Exit")
+        choice = input("Choose: ").strip()
+        if choice == '1':
+            name = input("Enter name: ").strip()
+            print(hotel.book(name))
+        elif choice == '2':
+            name = input("Enter name: ").strip()
+            print(hotel.cancel(name))
+        elif choice == '3':
+            break
+        else:
+            print("Invalid option, try again.")
+
+
+# How to Run
+
+1. Create & activate a virtual environment (if you haven't already):
+   ```
+   python -m venv venv
+   venv\Scripts\activate
+   ```
+
+2. Install Pyro5:
+   ```
+   pip install Pyro5
+   ```
+
+3. Open three separate Command Prompt windows:
+
+   A) **Nameserver**  
+      ```
+      python -m Pyro5.nameserver
+      ```
+
+   B) **Server**  
+      ```
+      python hotel_server.py
+      ```
+
+   C) **Client**  
+      ```
+      python hotel_client.py
+      ```
+
+4. In the client window, follow the menu to book or cancel rooms.
+
+5. When done, deactivate your venv:
+   ```
+   deactivate
+   ```

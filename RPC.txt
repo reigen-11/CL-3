@@ -1,0 +1,31 @@
+# server.py
+import xmlrpc.server
+
+def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    else:
+        return n * factorial(n - 1)
+
+def start_server():
+    with xmlrpc.server.SimpleXMLRPCServer(('localhost', 8000)) as server:
+        server.register_function(factorial, 'factorial')
+
+        print("Server is running...")
+        server.serve_forever()
+
+if __name__ == "__main__":
+    start_server()
+
+
+
+
+# client.py
+import xmlrpc.client
+
+server = xmlrpc.client.ServerProxy('http://localhost:8000')
+number = int(input("Enter an integer to calculate its factorial: "))
+
+result = server.factorial(number)
+print(f"The factorial of {number} is {result}")
+
